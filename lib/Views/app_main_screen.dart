@@ -10,7 +10,6 @@ class AppMainScreen extends StatefulWidget {
 class _AppMainScreenState extends State<AppMainScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-    );
+    return const Scaffold();
   }
 }
