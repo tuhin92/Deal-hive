@@ -44,7 +44,7 @@ class MyBanner extends StatelessWidget {
                           style: TextStyle(fontWeight: FontWeight.w900),
                         ),
                         Text(
-                          "Off",
+                          "OFF",
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
