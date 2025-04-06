@@ -1,4 +1,4 @@
-import 'package:application/Views/Widgets/banner.dart';
+import 'package:application/Widgets/banner.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
