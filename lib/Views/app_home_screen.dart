@@ -1,3 +1,4 @@
+import 'package:application/Views/Widgets/banner.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -54,6 +55,9 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                 ],
               ),
             ),
+            SizedBox(height: 20),
+            // for banner part
+            MyBanner(),
           ],
         ),
       ),
