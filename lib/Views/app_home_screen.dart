@@ -55,6 +55,100 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
     );
   }
 
+  Widget _buildProductItem({
+    required String imageUrl,
+    required String name,
+    required double price,
+    required double discountPrice,
+    required double rating,
+  }) {
+    return Container(
+      width: 160,
+      margin: EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product image
+          Container(
+            height: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              image: DecorationImage(
+                image: NetworkImage(imageUrl),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product name
+                Text(
+                  name,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                // Price and discount
+                Row(
+                  children: [
+                    Text(
+                      "\$${discountPrice.toStringAsFixed(2)}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      "\$${price.toStringAsFixed(2)}",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6),
+                // Rating
+                Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.amber, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      rating.toString(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,6 +264,73 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                 ),
               ),
             ),
+
+            // For You section header
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "For You",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    "See All",
+                    style: TextStyle(color: Colors.black45, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+
+            // For You products
+            Container(
+              height: 220,
+              padding: EdgeInsets.only(left: 20),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildProductItem(
+                    imageUrl:
+                        "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+                    name: "Wireless Earbuds",
+                    price: 129.99,
+                    discountPrice: 89.99,
+                    rating: 4.7,
+                  ),
+                  _buildProductItem(
+                    imageUrl:
+                        "https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+                    name: "Smart Watch",
+                    price: 199.99,
+                    discountPrice: 149.99,
+                    rating: 4.5,
+                  ),
+                  _buildProductItem(
+                    imageUrl:
+                        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+                    name: "Bluetooth Speaker",
+                    price: 89.99,
+                    discountPrice: 59.99,
+                    rating: 4.3,
+                  ),
+                  _buildProductItem(
+                    imageUrl:
+                        "https://images.unsplash.com/photo-1560769629-975ec94e6a86?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+                    name: "Sneakers",
+                    price: 149.99,
+                    discountPrice: 99.99,
+                    rating: 4.8,
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 20),
           ],
         ),
       ),
