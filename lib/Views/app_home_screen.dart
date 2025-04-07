@@ -1,6 +1,43 @@
 import 'package:application/Widgets/banner.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class Product {
+  final String id;
+  final String name;
+  final String brand;
+  final String category;
+  final String availability;
+  final double price;
+  final String imageLink;
+  final String description;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.brand,
+    required this.category,
+    required this.availability,
+    required this.price,
+    required this.imageLink,
+    required this.description,
+  });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['_id'] ?? '',
+      name: json['name'] ?? '',
+      brand: json['brand'] ?? '',
+      category: json['category'] ?? '',
+      availability: json['availability'] ?? '',
+      price: double.tryParse(json['price'] ?? '0') ?? 0.0,
+      imageLink: json['imageLink'] ?? '',
+      description: json['description'] ?? '',
+    );
+  }
+}
 
 class AppHomeScreen extends StatefulWidget {
   const AppHomeScreen({super.key});
@@ -10,6 +47,59 @@ class AppHomeScreen extends StatefulWidget {
 }
 
 class _AppHomeScreenState extends State<AppHomeScreen> {
+  List<Product> _products = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
+
+  Future<void> _fetchProducts() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+
+      print("Fetching products from API...");
+      final response = await http.get(
+        Uri.parse('https://deal-hive-server.vercel.app/products'),
+      );
+
+      print("API Response Status Code: ${response.statusCode}");
+      if (response.statusCode == 200) {
+        final responseBody = response.body;
+        print("Response body length: ${responseBody.length}");
+
+        final List<dynamic> productsJson = json.decode(responseBody);
+        print("Parsed ${productsJson.length} products");
+
+        setState(() {
+          _products =
+              productsJson.map((json) => Product.fromJson(json)).toList();
+          _isLoading = false;
+          print("Products loaded: ${_products.length}");
+        });
+      } else {
+        setState(() {
+          _errorMessage =
+              'Failed to load products. Status code: ${response.statusCode}';
+          _isLoading = false;
+          print("Error: $_errorMessage");
+        });
+      }
+    } catch (e) {
+      print("Exception occurred: ${e.toString()}");
+      setState(() {
+        _errorMessage = 'Error: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
+  }
+
   Widget _buildCategoryItem(String imageUrl, String categoryName) {
     return Container(
       width: 90,
@@ -49,6 +139,99 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductItemFromAPI(Product product) {
+    return Container(
+      width: 160,
+      margin: EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product image
+          Container(
+            height: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              image: DecorationImage(
+                image: NetworkImage(product.imageLink),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product name
+                Text(
+                  product.name,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                // Brand
+                Text(
+                  product.brand,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                // Price
+                Text(
+                  "\$${product.price.toStringAsFixed(2)}",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 6),
+                // Availability
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color:
+                        product.availability == "in_stock"
+                            ? Colors.green[100]
+                            : Colors.red[100],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    product.availability == "in_stock"
+                        ? "In Stock"
+                        : "Out of Stock",
+                    style: TextStyle(
+                      fontSize: 10,
+                      color:
+                          product.availability == "in_stock"
+                              ? Colors.green[800]
+                              : Colors.red[800],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -145,6 +328,45 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProductsList() {
+    if (_isLoading) {
+      return Container(
+        height: 230, // Increased height from 220 to 230
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_errorMessage.isNotEmpty) {
+      return Container(
+        height: 230, // Increased height
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Center(
+          child: Text(_errorMessage, style: TextStyle(color: Colors.red)),
+        ),
+      );
+    }
+
+    if (_products.isEmpty) {
+      return Container(
+        height: 230, // Increased height
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Center(child: Text('No products available')),
+      );
+    }
+
+    return Container(
+      height: 230, // Increased height from 220 to 230
+      padding: EdgeInsets.only(left: 20),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _products.length,
+        itemBuilder: (context, index) {
+          return _buildProductItemFromAPI(_products[index]);
+        },
       ),
     );
   }
@@ -287,48 +509,8 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
               ),
             ),
 
-            // For You products
-            Container(
-              height: 220,
-              padding: EdgeInsets.only(left: 20),
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildProductItem(
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1585155770447-2f66e2a397b5?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
-                    name: "Wireless Earbuds",
-                    price: 129.99,
-                    discountPrice: 89.99,
-                    rating: 4.7,
-                  ),
-                  _buildProductItem(
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
-                    name: "Smart Watch",
-                    price: 199.99,
-                    discountPrice: 149.99,
-                    rating: 4.5,
-                  ),
-                  _buildProductItem(
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
-                    name: "Bluetooth Speaker",
-                    price: 89.99,
-                    discountPrice: 59.99,
-                    rating: 4.3,
-                  ),
-                  _buildProductItem(
-                    imageUrl:
-                        "https://images.unsplash.com/photo-1560769629-975ec94e6a86?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
-                    name: "Sneakers",
-                    price: 149.99,
-                    discountPrice: 99.99,
-                    rating: 4.8,
-                  ),
-                ],
-              ),
-            ),
+            // For You products - API-driven section
+            _buildProductsList(),
 
             SizedBox(height: 20),
           ],
