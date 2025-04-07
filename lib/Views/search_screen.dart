@@ -2,41 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-class Product {
-  final String id;
-  final String name;
-  final String brand;
-  final String category;
-  final String availability;
-  final String price;
-  final String imageLink;
-  final String description;
-
-  Product({
-    required this.id,
-    required this.name,
-    required this.brand,
-    required this.category,
-    required this.availability,
-    required this.price,
-    required this.imageLink,
-    required this.description,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['_id'] ?? '',
-      name: json['name'] ?? '',
-      brand: json['brand'] ?? '',
-      category: json['category'] ?? '',
-      availability: json['availability'] ?? '',
-      price: json['price'] ?? '',
-      imageLink: json['imageLink'] ?? '',
-      description: json['description'] ?? '',
-    );
-  }
-}
+import 'package:application/Views/product_details.dart';
+import 'package:application/Models/product.dart'; // Add this import
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -257,135 +224,148 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product image
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ProductDetailsScreen(
+                  product: product, // Pass the product directly
                 ),
-                color: Colors.grey.shade50,
-              ),
-              child: Image.network(
-                product.imageLink,
-                fit: BoxFit.contain,
-                errorBuilder:
-                    (ctx, error, _) => const Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        size: 40,
-                        color: Colors.grey,
+          ),
+        );
+      },
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product image
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  color: Colors.grey.shade50,
+                ),
+                child: Image.network(
+                  product.imageLink,
+                  fit: BoxFit.contain,
+                  errorBuilder:
+                      (ctx, error, _) => const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-                loadingBuilder: (ctx, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value:
-                          loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  (loadingProgress.expectedTotalBytes ?? 1)
-                              : null,
-                    ),
-                  );
-                },
+                  loadingBuilder: (ctx, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value:
+                            loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    (loadingProgress.expectedTotalBytes ?? 1)
+                                : null,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
 
-          // Product details
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name with limited height
-                  SizedBox(
-                    height: 36, // Fixed height for name
-                    child: Text(
-                      product.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  // Brand with limited height
-                  SizedBox(
-                    height: 16, // Fixed height for brand
-                    child: Text(
-                      product.brand,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // Price and availability with spacer to push to bottom
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '\$${product.price}',
+            // Product details
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name with limited height
+                    SizedBox(
+                      height: 36, // Fixed height for name
+                      child: Text(
+                        product.name,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.green,
+                          fontSize: 14,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                    ),
+                    const SizedBox(height: 2),
+                    // Brand with limited height
+                    SizedBox(
+                      height: 16, // Fixed height for brand
+                      child: Text(
+                        product.brand,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
                         ),
-                        decoration: BoxDecoration(
-                          color:
-                              product.availability == 'in_stock'
-                                  ? Colors.green.shade100
-                                  : product.availability == 'pre_order'
-                                  ? Colors.amber.shade100
-                                  : Colors.red.shade100,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          product.availability
-                              .replaceAll('_', ' ')
-                              .capitalize(),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color:
-                                product.availability == 'in_stock'
-                                    ? Colors.green.shade800
-                                    : product.availability == 'pre_order'
-                                    ? Colors.amber.shade800
-                                    : Colors.red.shade800,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Price and availability with spacer to push to bottom
+                    const Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '\$${product.price.toStringAsFixed(2)}', // Format the double price
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.green,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                product.availability == 'in_stock'
+                                    ? Colors.green.shade100
+                                    : product.availability == 'pre_order'
+                                    ? Colors.amber.shade100
+                                    : Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            product.availability
+                                .replaceAll('_', ' ')
+                                .capitalize(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color:
+                                  product.availability == 'in_stock'
+                                      ? Colors.green.shade800
+                                      : product.availability == 'pre_order'
+                                      ? Colors.amber.shade800
+                                      : Colors.red.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:application/Views/app_home_screen.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:application/Models/product.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final Product product;
