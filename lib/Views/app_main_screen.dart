@@ -1,4 +1,7 @@
 import 'package:application/Views/app_home_screen.dart';
+import 'package:application/Views/search_screen.dart';
+import 'package:application/Views/notifications_screen.dart';
+import 'package:application/Views/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -12,11 +15,11 @@ class AppMainScreen extends StatefulWidget {
 class _AppMainScreenState extends State<AppMainScreen> {
   int selectedIndex = 0;
   final List pages = [
-    AppHomeScreen(), 
-    Scaffold(), 
-    Scaffold(), 
-    Scaffold()
-    ];
+    AppHomeScreen(),
+    SearchScreen(),
+    NotificationsScreen(),
+    ProfileScreen(),
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
