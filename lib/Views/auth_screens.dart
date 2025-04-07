@@ -26,9 +26,9 @@ class SignInScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Center(
                 child: Image.asset(
-                  'assets/images/logo.png', // Add your logo asset
-                  height: 100,
-                  width: 100,
+                  'assets/logo.png',
+                  height: 120,
+                  width: 120,
                   errorBuilder:
                       (context, error, stackTrace) => const Icon(
                         Iconsax.shop,
@@ -84,7 +84,10 @@ class SignInScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Navigate back to profile with success message (in a real app)
+                    Navigator.pop(context);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
@@ -120,6 +123,23 @@ class SignInScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
+              // Home button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      // Navigate back to home screen
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                    icon: const Icon(Iconsax.home, color: Colors.black),
+                    label: const Text(
+                      'Back to Home',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -153,9 +173,9 @@ class SignUpScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Center(
                 child: Image.asset(
-                  'assets/images/logo.png', // Add your logo asset
-                  height: 100,
-                  width: 100,
+                  'assets/logo.png',
+                  height: 120,
+                  width: 120,
                   errorBuilder:
                       (context, error, stackTrace) => const Icon(
                         Iconsax.shop,
@@ -221,7 +241,10 @@ class SignUpScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Navigate back to profile with success message (in a real app)
+                    Navigator.pop(context);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
@@ -252,6 +275,23 @@ class SignUpScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
+              // Home button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      // Navigate back to home screen
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                    icon: const Icon(Iconsax.home, color: Colors.black),
+                    label: const Text(
+                      'Back to Home',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
