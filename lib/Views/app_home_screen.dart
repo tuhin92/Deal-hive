@@ -1,3 +1,4 @@
+import 'package:application/Views/cart_screen.dart';
 import 'package:application/Widgets/banner.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -457,7 +458,17 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Icon(Iconsax.shopping_bag, size: 28),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CartScreen(),
+                            ),
+                          );
+                        },
+                        child: Icon(Iconsax.shopping_bag, size: 28),
+                      ),
                       Positioned(
                         right: -3,
                         top: -5,
