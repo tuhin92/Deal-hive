@@ -2,10 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:application/Models/product.dart';
 
-class ProductDetailsScreen extends StatelessWidget {
+class ProductDetailsScreen extends StatefulWidget {
   final Product product;
 
   const ProductDetailsScreen({super.key, required this.product});
+
+  @override
+  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+}
+
+class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  int quantity = 1;
+
+  void _incrementQuantity() {
+    setState(() {
+      quantity++;
+    });
+  }
+
+  void _decrementQuantity() {
+    if (quantity > 1) {
+      setState(() {
+        quantity--;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +74,7 @@ class ProductDetailsScreen extends StatelessWidget {
               width: double.infinity,
               color: Colors.grey[100],
               child: Image.network(
-                product.imageLink,
+                widget.product.imageLink,
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
@@ -86,19 +107,19 @@ class ProductDetailsScreen extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color:
-                          product.availability == "in_stock"
+                          widget.product.availability == "in_stock"
                               ? Colors.green[50]
                               : Colors.red[50],
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      product.availability == "in_stock"
+                      widget.product.availability == "in_stock"
                           ? "In Stock"
                           : "Out of Stock",
                       style: TextStyle(
                         fontSize: 12,
                         color:
-                            product.availability == "in_stock"
+                            widget.product.availability == "in_stock"
                                 ? Colors.green[700]
                                 : Colors.red[700],
                         fontWeight: FontWeight.w600,
@@ -110,7 +131,7 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   // Product Name
                   Text(
-                    product.name,
+                    widget.product.name,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
 
@@ -118,13 +139,13 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   // Brand
                   Text(
-                    "Brand: ${product.brand}",
+                    "Brand: ${widget.product.brand}",
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
 
                   // Category
                   Text(
-                    "Category: ${product.category}",
+                    "Category: ${widget.product.category}",
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
 
@@ -132,12 +153,67 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   // Price
                   Text(
-                    "\$${product.price.toStringAsFixed(2)}",
+                    "\$${widget.product.price.toStringAsFixed(2)}",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
                     ),
+                  ),
+
+                  SizedBox(height: 24),
+
+                  // Quantity Selector
+                  Row(
+                    children: [
+                      Text(
+                        "Quantity:",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.remove),
+                              onPressed: _decrementQuantity,
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
+                            ),
+                            Container(
+                              width: 40,
+                              alignment: Alignment.center,
+                              child: Text(
+                                quantity.toString(),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: _incrementQuantity,
+                              padding: EdgeInsets.zero,
+                              constraints: BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
 
                   Divider(height: 32),
@@ -152,7 +228,7 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   // Description
                   Text(
-                    product.description,
+                    widget.product.description,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[800],
@@ -178,66 +254,98 @@ class ProductDetailsScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed:
-                    product.availability == "in_stock"
-                        ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Added to cart'),
-                              duration: Duration(seconds: 1),
-                            ),
-                          );
-                        }
-                        : null,
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: Theme.of(context).primaryColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            // Total Price
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total Price:",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                ),
-                child: Text(
-                  "Add to Cart",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                  Text(
+                    "\$${(widget.product.price * quantity).toStringAsFixed(2)}",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton(
-                onPressed:
-                    product.availability == "in_stock"
-                        ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Buy Now functionality coming soon',
-                              ),
-                              duration: Duration(seconds: 1),
-                            ),
-                          );
-                        }
-                        : null,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            // Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed:
+                        widget.product.availability == "in_stock"
+                            ? () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Added $quantity item(s) to cart',
+                                  ),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            }
+                            : null,
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: Theme.of(context).primaryColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      "Add to Cart",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-                child: Text(
-                  "Buy Now",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed:
+                        widget.product.availability == "in_stock"
+                            ? () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Buy Now functionality coming soon ($quantity items)',
+                                  ),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            }
+                            : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      "Buy Now",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
