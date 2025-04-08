@@ -1,4 +1,5 @@
 import 'package:application/Views/cart_screen.dart';
+import 'package:application/Views/wishlist_screen.dart';
 import 'package:application/Widgets/banner.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -455,40 +456,56 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Image.asset("assets/logo.png", height: 40),
-                  Stack(
-                    clipBehavior: Clip.none,
+                  Row(
                     children: [
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CartScreen(),
+                              builder: (context) => WishlistScreen(),
                             ),
                           );
                         },
-                        child: Icon(Iconsax.shopping_bag, size: 28),
+                        child: Icon(Icons.favorite_border, size: 28),
                       ),
-                      Positioned(
-                        right: -3,
-                        top: -5,
-                        child: Container(
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
+                      SizedBox(width: 20),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CartScreen(),
+                                ),
+                              );
+                            },
+                            child: Icon(Iconsax.shopping_bag, size: 28),
                           ),
-                          child: Center(
-                            child: Text(
-                              "2",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                          Positioned(
+                            right: -3,
+                            top: -5,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "2",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
