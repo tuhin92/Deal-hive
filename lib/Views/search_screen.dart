@@ -1,3 +1,4 @@
+import 'package:application/Widgets/chat_bot.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'dart:convert';
@@ -212,6 +213,28 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder:
+                (context) => ChatBot(
+                  productPrice:
+                      _filteredProducts.isNotEmpty
+                          ? _filteredProducts[0].price
+                          : 0.0,
+                  productName:
+                      _filteredProducts.isNotEmpty
+                          ? _filteredProducts[0].name
+                          : "our products",
+                ),
+          );
+        },
+        child: Icon(Icons.chat),
+        backgroundColor: Colors.blue,
       ),
     );
   }

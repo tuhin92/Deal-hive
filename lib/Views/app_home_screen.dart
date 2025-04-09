@@ -1,6 +1,7 @@
 import 'package:application/Views/cart_screen.dart';
 import 'package:application/Views/wishlist_screen.dart';
 import 'package:application/Widgets/banner.dart';
+import 'package:application/Widgets/chat_bot.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
@@ -611,6 +612,23 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
             SizedBox(height: 20),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder:
+                (context) => ChatBot(
+                  productPrice: _products.isNotEmpty ? _products[0].price : 0.0,
+                  productName:
+                      _products.isNotEmpty ? _products[0].name : "our products",
+                ),
+          );
+        },
+        child: Icon(Icons.chat),
+        backgroundColor: Colors.blue,
       ),
     );
   }
