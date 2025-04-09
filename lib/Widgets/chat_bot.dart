@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:application/Models/product.dart';
 
 class ChatBot extends StatefulWidget {
   final double productPrice;
@@ -14,19 +17,66 @@ class ChatBot extends StatefulWidget {
   State<ChatBot> createState() => _ChatBotState();
 }
 
+// Update the ChatBot class to handle product selection
+
 class _ChatBotState extends State<ChatBot> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
   bool _isBotTyping = false;
+  String? _selectedProduct;
+  List<Product> _allProducts = [];
+  bool _isLoadingProducts = false;
+  double? _currentPrice;
 
   @override
   void initState() {
     super.initState();
-    _addBotMessage(
-      "Hello! I'm DealBot. I see you're interested in ${widget.productName}. "
-      "The current price is \$${widget.productPrice.toStringAsFixed(2)}. "
-      "What price would you like to negotiate for?",
-    );
+    if (widget.productName == "our products") {
+      _fetchProducts(); // Fetch products when starting from home screen
+      _addBotMessage(
+        "Hello! I'm DealBot. Which product are you interested in buying? Please enter the product name.",
+      );
+    } else {
+      _selectedProduct = widget.productName;
+      _addBotMessage(
+        "Hello! I'm DealBot. I see you're interested in ${widget.productName}. "
+        "The current price is \$${widget.productPrice.toStringAsFixed(2)}. "
+        "What price would you like to negotiate for?",
+      );
+    }
+  }
+
+  Future<void> _fetchProducts() async {
+    try {
+      setState(() {
+        _isLoadingProducts = true;
+      });
+
+      final response = await http.get(
+        Uri.parse('https://deal-hive-server.vercel.app/products'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> productsJson = json.decode(response.body);
+        setState(() {
+          _allProducts =
+              productsJson.map((json) => Product.fromJson(json)).toList();
+          _isLoadingProducts = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingProducts = false;
+          _addBotMessage(
+            "Sorry, I'm having trouble accessing the product database. Please try again later.",
+          );
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingProducts = false;
+        _addBotMessage("Sorry, something went wrong. Please try again later.");
+      });
+    }
   }
 
   void _addBotMessage(String message) {
@@ -47,12 +97,65 @@ class _ChatBotState extends State<ChatBot> {
 
     // Simulate bot thinking
     Future.delayed(Duration(seconds: 1), () {
-      _processBotResponse(message);
+      if (_selectedProduct == null) {
+        _processProductSelection(message);
+      } else {
+        _processBotResponse(message);
+      }
+    });
+  }
+
+  void _processProductSelection(String userMessage) {
+    if (_isLoadingProducts) {
+      _addBotMessage(
+        "I'm still loading the product list. Please wait a moment...",
+      );
+      return;
+    }
+
+    setState(() {
+      _isBotTyping = false;
+
+      // Search for products
+      String searchQuery = userMessage.toLowerCase();
+      List<Product> matchingProducts =
+          _allProducts.where((product) {
+            return product.name.toLowerCase().contains(searchQuery) ||
+                product.brand.toLowerCase().contains(searchQuery) ||
+                product.category.toLowerCase().contains(searchQuery);
+          }).toList();
+
+      if (matchingProducts.isEmpty) {
+        _addBotMessage(
+          "I couldn't find any products matching '$userMessage'. "
+          "Please try another product name or check our available products.",
+        );
+      } else if (matchingProducts.length > 1) {
+        // Multiple products found
+        String productList = matchingProducts
+            .take(3) // Show only first 3 matches to avoid long messages
+            .map((p) => "\n- ${p.name} (\$${p.price.toStringAsFixed(2)})")
+            .join("");
+
+        _addBotMessage(
+          "I found several products matching your search:$productList\n\n"
+          "Please specify which one you're interested in.",
+        );
+      } else {
+        // Single product found
+        Product product = matchingProducts[0];
+        _selectedProduct = product.name;
+        _currentPrice = product.price;
+        _addBotMessage(
+          "I found ${product.name}! "
+          "The current price is \$${product.price.toStringAsFixed(2)}. "
+          "What price would you like to negotiate for?",
+        );
+      }
     });
   }
 
   void _processBotResponse(String userMessage) {
-    // Extract number from user message
     double? offeredPrice = _extractPrice(userMessage);
     String botResponse;
 
@@ -60,11 +163,12 @@ class _ChatBotState extends State<ChatBot> {
       botResponse =
           "I'm sorry, I couldn't understand the price. Please mention a specific amount.";
     } else {
-      double minimumPrice = widget.productPrice * 0.7; // 70% of original price
+      double currentPrice = _currentPrice ?? widget.productPrice;
+      double minimumPrice = currentPrice * 0.7;
 
-      if (offeredPrice >= widget.productPrice) {
+      if (offeredPrice >= currentPrice) {
         botResponse =
-            "The current price is already \$${widget.productPrice.toStringAsFixed(2)}. No need to pay more!";
+            "The current price is already \$${currentPrice.toStringAsFixed(2)}. No need to pay more!";
       } else if (offeredPrice >= minimumPrice) {
         botResponse =
             "Great! I can accept your offer of \$${offeredPrice.toStringAsFixed(2)}. Would you like to proceed with the purchase?";
