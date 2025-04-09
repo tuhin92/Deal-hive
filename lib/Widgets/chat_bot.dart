@@ -28,6 +28,13 @@ class _ChatBotState extends State<ChatBot> {
   bool _isLoadingProducts = false;
   double? _currentPrice;
 
+  // Add these new properties
+  bool _isFirstOffer = true;
+  double? _lastOfferedPrice;
+  bool _waitingForConfirmation = false;
+  bool _isNegotiationComplete = false;
+  bool _hasReachedFinalOffer = false;
+
   @override
   void initState() {
     super.initState();
@@ -155,33 +162,158 @@ class _ChatBotState extends State<ChatBot> {
     });
   }
 
+  // Update the _processBotResponse method to fix the negotiation logic
   void _processBotResponse(String userMessage) {
-    double? offeredPrice = _extractPrice(userMessage);
-    String botResponse;
+    // Handle yes/no responses for purchase confirmation
+    if (_waitingForConfirmation) {
+      String response = userMessage.toLowerCase().trim();
+      if (response == 'yes' ||
+          response == 'sure' ||
+          response == 'okay' ||
+          response == 'ok') {
+        _waitingForConfirmation = false;
+        _isNegotiationComplete = true;
 
-    if (offeredPrice == null) {
-      botResponse =
-          "I'm sorry, I couldn't understand the price. Please mention a specific amount.";
-    } else {
-      double currentPrice = _currentPrice ?? widget.productPrice;
-      double minimumPrice = currentPrice * 0.7;
-
-      if (offeredPrice >= currentPrice) {
-        botResponse =
-            "The current price is already \$${currentPrice.toStringAsFixed(2)}. No need to pay more!";
-      } else if (offeredPrice >= minimumPrice) {
-        botResponse =
-            "Great! I can accept your offer of \$${offeredPrice.toStringAsFixed(2)}. Would you like to proceed with the purchase?";
+        // Ensure we're using the last offered price from the bot
+        _addBotMessage(
+          "Great! Your purchase is confirmed at \$${_lastOfferedPrice!.toStringAsFixed(2)}. Thank you for shopping with us!",
+        );
+        return;
+      } else if (response == 'no' || response == 'nope' || response == 'pass') {
+        // User rejected our counter offer, so we ask for their new offer
+        _waitingForConfirmation = false;
+        _addBotMessage(
+          "I understand. What price would you like to offer instead?",
+        );
+        return;
       } else {
-        botResponse =
-            "I'm sorry, I cannot go that low. The minimum price I can offer is \$${minimumPrice.toStringAsFixed(2)}.";
+        // Try to extract a price from their response
+        double? newOfferedPrice = _extractPrice(userMessage);
+        if (newOfferedPrice != null) {
+          _waitingForConfirmation = false;
+          // They responded with a price instead of yes/no
+          _handlePriceOffer(newOfferedPrice);
+          return;
+        } else {
+          // Couldn't understand their response
+          _waitingForConfirmation = false;
+          _addBotMessage(
+            "I'm not sure if that's a yes or no. Please provide a clear response or a new price offer.",
+          );
+          return;
+        }
       }
     }
 
-    setState(() {
-      _isBotTyping = false;
-      _addBotMessage(botResponse);
-    });
+    // If negotiation is complete, don't process any more offers
+    if (_isNegotiationComplete) {
+      _addBotMessage(
+        "Our deal is already complete at \$${_lastOfferedPrice!.toStringAsFixed(2)}. Would you like to negotiate for a different product?",
+      );
+      return;
+    }
+
+    double? offeredPrice = _extractPrice(userMessage);
+    if (offeredPrice == null) {
+      _addBotMessage(
+        "I'm sorry, I couldn't understand your price. Please specify an amount (e.g., \$50).",
+      );
+      return;
+    }
+
+    _handlePriceOffer(offeredPrice);
+  }
+
+  // New helper method to separate the price negotiation logic
+  void _handlePriceOffer(double offeredPrice) {
+    double currentPrice = _currentPrice ?? widget.productPrice;
+    double minimumPrice = currentPrice * 0.75; // Absolute minimum (75%)
+
+    // Early return if offered price is higher than current price
+    if (offeredPrice >= currentPrice) {
+      _addBotMessage(
+        "The current price is already \$${currentPrice.toStringAsFixed(2)}. No need to pay more!",
+      );
+      return;
+    }
+
+    // First offer from user
+    if (_isFirstOffer) {
+      _isFirstOffer = false;
+
+      if (offeredPrice >= minimumPrice) {
+        // Good first offer - counter with 10% more than their offer
+        double counterOffer = offeredPrice * 1.1;
+        if (counterOffer > currentPrice) counterOffer = currentPrice;
+
+        _lastOfferedPrice = counterOffer;
+        _addBotMessage(
+          "Thanks for your offer of \$${offeredPrice.toStringAsFixed(2)}. "
+          "How about \$${counterOffer.toStringAsFixed(2)}? This is a fair price considering the quality.",
+        );
+        _waitingForConfirmation = true;
+      } else {
+        // Low first offer - counter with minimum price
+        double counterOffer = currentPrice * 0.85; // First counter is 85%
+        _lastOfferedPrice = counterOffer;
+        _addBotMessage(
+          "I appreciate your offer of \$${offeredPrice.toStringAsFixed(2)}, but it's too low. "
+          "I can offer \$${counterOffer.toStringAsFixed(2)}, which is already ${(100 - (counterOffer / currentPrice * 100)).toStringAsFixed(0)}% off the regular price.",
+        );
+        _waitingForConfirmation = true;
+      }
+      return;
+    }
+
+    // Second or later offer
+    if (_hasReachedFinalOffer) {
+      if (offeredPrice >= _lastOfferedPrice!) {
+        _addBotMessage(
+          "Perfect! I accept your offer of \$${offeredPrice.toStringAsFixed(2)}. Would you like to proceed with the purchase?",
+        );
+        _lastOfferedPrice = offeredPrice;
+        _waitingForConfirmation = true;
+        _isNegotiationComplete = true;
+      } else {
+        _addBotMessage(
+          "I'm sorry, but my final offer is \$${_lastOfferedPrice!.toStringAsFixed(2)}. I cannot go any lower than this. Do you accept this price?",
+        );
+        _waitingForConfirmation = true;
+      }
+      return;
+    }
+
+    // Not first offer, not final offer yet
+    if (offeredPrice >= minimumPrice) {
+      if (offeredPrice >= _lastOfferedPrice!) {
+        // They increased their offer (unusual but possible)
+        _addBotMessage(
+          "I appreciate your increased offer of \$${offeredPrice.toStringAsFixed(2)}! I'll happily accept this price. Shall we proceed with the purchase?",
+        );
+        _lastOfferedPrice = offeredPrice;
+        _waitingForConfirmation = true;
+        _isNegotiationComplete = true;
+      } else {
+        // They've made a reasonable counter to our counter
+        double finalOffer = (offeredPrice + minimumPrice) / 2;
+        _lastOfferedPrice = finalOffer;
+        _hasReachedFinalOffer = true;
+        _addBotMessage(
+          "You're a good negotiator! My final offer is \$${finalOffer.toStringAsFixed(2)}. This is the best I can do. Do we have a deal?",
+        );
+        _waitingForConfirmation = true;
+      }
+    } else {
+      // They're still offering below minimum price
+      _hasReachedFinalOffer = true;
+      _lastOfferedPrice = minimumPrice;
+      _addBotMessage(
+        "I understand you want a good deal, but \$${minimumPrice.toStringAsFixed(2)} is my absolute final offer. "
+        "This is ${(100 - (minimumPrice / currentPrice * 100)).toStringAsFixed(0)}% off the regular price. "
+        "I cannot go any lower. Do you accept?",
+      );
+      _waitingForConfirmation = true;
+    }
   }
 
   double? _extractPrice(String message) {
