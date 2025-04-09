@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:application/Models/product.dart';
 import 'package:application/Widgets/chat_bot.dart';
 import 'package:application/Services/cart_service.dart';
+import 'package:application/Services/wishlist_service.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -43,14 +44,35 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Iconsax.heart, color: Colors.black),
+            icon: Icon(
+              WishlistService.isInWishlist(widget.product)
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color:
+                  WishlistService.isInWishlist(widget.product)
+                      ? Colors.red
+                      : Colors.black,
+            ),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Added to wishlist'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
+              setState(() {
+                if (WishlistService.isInWishlist(widget.product)) {
+                  WishlistService.removeFromWishlist(widget.product);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Removed from wishlist'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                } else {
+                  WishlistService.addToWishlist(widget.product);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Added to wishlist'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                }
+              });
             },
           ),
           IconButton(

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:application/Services/wishlist_service.dart';
+import 'package:application/Models/wishlist_item.dart';
+import 'package:application/Views/product_details.dart';
+import 'package:application/Services/cart_service.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -9,10 +13,20 @@ class WishlistScreen extends StatefulWidget {
 }
 
 class _WishlistScreenState extends State<WishlistScreen> {
-  bool isWishlistEmpty = true; // Later connect this to your state management
+  List<WishlistItem> wishlistItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Get wishlist items from service
+    wishlistItems = WishlistService.getWishlistItems();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Check if wishlist is empty
+    bool isWishlistEmpty = wishlistItems.isEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -68,9 +82,43 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 ),
               )
               : ListView.builder(
-                itemCount: 0, // Replace with actual wishlist items count
+                itemCount: wishlistItems.length,
                 itemBuilder: (context, index) {
-                  return WishlistItemCard();
+                  return WishlistItemCard(
+                    wishlistItem: wishlistItems[index],
+                    onRemove: () {
+                      setState(() {
+                        WishlistService.removeFromWishlist(
+                          wishlistItems[index].product,
+                        );
+                        wishlistItems = WishlistService.getWishlistItems();
+                      });
+                    },
+                    onAddToCart: () {
+                      CartService.addToCart(wishlistItems[index].product, 1);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Added to cart'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => ProductDetailsScreen(
+                                product: wishlistItems[index].product,
+                              ),
+                        ),
+                      ).then((_) {
+                        setState(() {
+                          wishlistItems = WishlistService.getWishlistItems();
+                        });
+                      });
+                    },
+                  );
                 },
               ),
     );
@@ -78,28 +126,108 @@ class _WishlistScreenState extends State<WishlistScreen> {
 }
 
 class WishlistItemCard extends StatelessWidget {
+  final WishlistItem wishlistItem;
+  final VoidCallback onRemove;
+  final VoidCallback onAddToCart;
+  final VoidCallback onTap;
+
+  const WishlistItemCard({
+    Key? key,
+    required this.wishlistItem,
+    required this.onRemove,
+    required this.onAddToCart,
+    required this.onTap,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-      child: ListTile(
-        leading: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Product image
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    wishlistItem.product.imageLink,
+                    fit: BoxFit.contain,
+                    errorBuilder:
+                        (ctx, err, _) =>
+                            Icon(Icons.image, color: Colors.grey[400]),
+                  ),
+                ),
+              ),
+              SizedBox(width: 15),
+              // Product details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      wishlistItem.product.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      '\$${wishlistItem.product.price.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      wishlistItem.product.availability == "in_stock"
+                          ? "In Stock"
+                          : "Out of Stock",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color:
+                            wishlistItem.product.availability == "in_stock"
+                                ? Colors.green[600]
+                                : Colors.red[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Action buttons
+              Column(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.delete_outline),
+                    onPressed: onRemove,
+                    color: Colors.red[300],
+                  ),
+                  SizedBox(height: 5),
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart_outlined),
+                    onPressed:
+                        wishlistItem.product.availability == "in_stock"
+                            ? onAddToCart
+                            : null,
+                    color: Colors.blue,
+                  ),
+                ],
+              ),
+            ],
           ),
-          child: Center(child: Icon(Icons.image, color: Colors.grey[400])),
-        ),
-        title: Text(
-          'Product Name',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text('\$99.99'),
-        trailing: IconButton(
-          icon: Icon(Icons.delete_outline),
-          onPressed: () {},
         ),
       ),
     );

@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:application/Views/product_details.dart';
 import 'package:application/Models/product.dart'; // Add this import
 import 'package:application/Services/cart_service.dart';
+import 'package:application/Services/wishlist_service.dart';
 
 class AppHomeScreen extends StatefulWidget {
   const AppHomeScreen({super.key});
@@ -206,7 +207,10 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                         height: 32,
                         width: 32,
                         decoration: BoxDecoration(
-                          color: Colors.grey[400],
+                          color:
+                              WishlistService.isInWishlist(product)
+                                  ? Colors.red[400]
+                                  : Colors.grey[400],
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -222,18 +226,32 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                             padding: EdgeInsets.zero,
                             constraints: BoxConstraints(),
                             icon: Icon(
-                              Icons.favorite_border,
+                              WishlistService.isInWishlist(product)
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
                               size: 18,
                               color: Colors.white,
                             ),
                             onPressed: () {
-                              // Add wishlist functionality here
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Added to wishlist'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
+                              setState(() {
+                                if (WishlistService.isInWishlist(product)) {
+                                  WishlistService.removeFromWishlist(product);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Removed from wishlist'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                } else {
+                                  WishlistService.addToWishlist(product);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Added to wishlist'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
+                              });
                             },
                           ),
                         ),
@@ -460,16 +478,45 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                   Image.asset("assets/logo.png", height: 40),
                   Row(
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WishlistScreen(),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WishlistScreen(),
+                                ),
+                              ).then((_) {
+                                // Refresh the screen when returning from wishlist
+                                setState(() {});
+                              });
+                            },
+                            child: Icon(Icons.favorite_border, size: 28),
+                          ),
+                          Positioned(
+                            right: -3,
+                            top: -5,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "${WishlistService.getWishlistCount()}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                        child: Icon(Icons.favorite_border, size: 28),
+                          ),
+                        ],
                       ),
                       SizedBox(width: 20),
                       Stack(
