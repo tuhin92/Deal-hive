@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:application/Views/product_details.dart';
 import 'package:application/Models/product.dart'; // Add this import
+import 'package:application/Services/cart_service.dart';
 
 class AppHomeScreen extends StatefulWidget {
   const AppHomeScreen({super.key});
@@ -481,7 +482,10 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                                 MaterialPageRoute(
                                   builder: (context) => CartScreen(),
                                 ),
-                              );
+                              ).then((_) {
+                                // Refresh the screen when returning from cart
+                                setState(() {});
+                              });
                             },
                             child: Icon(Iconsax.shopping_bag, size: 28),
                           ),
@@ -496,7 +500,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "2",
+                                  "${CartService.getCartCount()}",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,

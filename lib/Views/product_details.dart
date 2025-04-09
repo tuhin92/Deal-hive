@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:application/Models/product.dart';
 import 'package:application/Widgets/chat_bot.dart';
+import 'package:application/Services/cart_service.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -303,6 +304,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     onPressed:
                         widget.product.availability == "in_stock"
                             ? () {
+                              // Add product to cart service
+                              CartService.addToCart(widget.product, quantity);
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
