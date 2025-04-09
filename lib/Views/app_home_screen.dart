@@ -620,11 +620,8 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
             builder:
-                (context) => ChatBot(
-                  productPrice: _products.isNotEmpty ? _products[0].price : 0.0,
-                  productName:
-                      _products.isNotEmpty ? _products[0].name : "our products",
-                ),
+                (context) =>
+                    ChatBot(productPrice: 0.0, productName: "our products"),
           );
         },
         child: Icon(Icons.chat),

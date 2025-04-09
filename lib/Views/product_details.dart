@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:application/Models/product.dart';
+import 'package:application/Widgets/chat_bot.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -240,6 +241,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder:
+                (context) => ChatBot(
+                  productPrice: widget.product.price,
+                  productName: widget.product.name,
+                ),
+          );
+        },
+        child: Icon(Icons.chat),
+        backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.all(16),
