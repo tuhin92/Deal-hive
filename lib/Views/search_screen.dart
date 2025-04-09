@@ -222,14 +222,9 @@ class _SearchScreenState extends State<SearchScreen> {
             backgroundColor: Colors.transparent,
             builder:
                 (context) => ChatBot(
-                  productPrice:
-                      _filteredProducts.isNotEmpty
-                          ? _filteredProducts[0].price
-                          : 0.0,
+                  productPrice: 0.0,
                   productName:
-                      _filteredProducts.isNotEmpty
-                          ? _filteredProducts[0].name
-                          : "our products",
+                      "our products", // Changed to match home screen behavior
                 ),
           );
         },
