@@ -105,14 +105,70 @@ class _CartScreenState extends State<CartScreen> {
                                 );
                                 cartItems = CartService.getCartItems();
                               });
-                            } else {
-                              setState(() {
-                                CartService.removeFromCart(
-                                  cartItems[index].product,
-                                );
-                                cartItems = CartService.getCartItems();
-                              });
                             }
+                          },
+                          onDelete: () {
+                            // Show confirmation dialog
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Remove Item'),
+                                  content: Text(
+                                    'Are you sure you want to remove this item from your cart?',
+                                  ),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: Text(
+                                        'Remove',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          CartService.removeFromCart(
+                                            cartItems[index].product,
+                                          );
+                                          cartItems =
+                                              CartService.getCartItems();
+                                        });
+                                        Navigator.of(context).pop();
+
+                                        // Show a snackbar to confirm removal
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Item removed from cart',
+                                            ),
+                                            duration: Duration(seconds: 1),
+                                            action: SnackBarAction(
+                                              label: 'UNDO',
+                                              onPressed: () {
+                                                setState(() {
+                                                  CartService.addToCart(
+                                                    cartItems[index].product,
+                                                    1,
+                                                  );
+                                                  cartItems =
+                                                      CartService.getCartItems();
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                         );
                       },
@@ -129,12 +185,14 @@ class CartItemCard extends StatelessWidget {
   final CartItem cartItem;
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
+  final VoidCallback onDelete; // New parameter for delete action
 
   const CartItemCard({
     Key? key,
     required this.cartItem,
     required this.onIncrease,
     required this.onDecrease,
+    required this.onDelete, // Add required parameter
   }) : super(key: key);
 
   @override
@@ -180,6 +238,29 @@ class CartItemCard extends StatelessWidget {
                   Text(
                     '\$${cartItem.product.price.toStringAsFixed(2)}',
                     style: TextStyle(color: Colors.black87, fontSize: 14),
+                  ),
+                  SizedBox(height: 5),
+                  // Add a delete button below the price
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline,
+                          size: 16,
+                          color: Colors.red[400],
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Remove',
+                          style: TextStyle(
+                            color: Colors.red[400],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
