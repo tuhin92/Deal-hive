@@ -35,16 +35,22 @@ class _ChatBotState extends State<ChatBot> {
   bool _isNegotiationComplete = false;
   bool _hasReachedFinalOffer = false;
 
+  // Add these properties to the _ChatBotState class
+  bool _isShowingCategoryProducts = false;
+  bool _isExitingChat = false;
+
   @override
   void initState() {
     super.initState();
     if (widget.productName == "our products") {
       _fetchProducts(); // Fetch products when starting from home screen
       _addBotMessage(
-        "Hello! I'm DealBot. Which product are you interested in buying? Please enter the product name.",
+        "Hello! I'm DealBot. You can tell me which product you're interested in buying, "
+        "or ask me to show products in a specific category like 'medicine', 'beauty', etc.",
       );
     } else {
       _selectedProduct = widget.productName;
+      _currentPrice = widget.productPrice;
       _addBotMessage(
         "Hello! I'm DealBot. I see you're interested in ${widget.productName}. "
         "The current price is \$${widget.productPrice.toStringAsFixed(2)}. "
@@ -162,8 +168,103 @@ class _ChatBotState extends State<ChatBot> {
     });
   }
 
-  // Update the _processBotResponse method to fix the negotiation logic
+  // Update the _processBotResponse method to better handle rejection and categories
+
   void _processBotResponse(String userMessage) {
+    String lowerMessage = userMessage.toLowerCase().trim();
+
+    // Handle direct chat closing request
+    if (lowerMessage.contains("close chat") ||
+        lowerMessage.contains("bye") ||
+        lowerMessage.contains("goodbye") ||
+        (lowerMessage.contains("don't") && lowerMessage.contains("want")) ||
+        (lowerMessage.contains("do not") && lowerMessage.contains("want")) ||
+        (lowerMessage.contains("not") && lowerMessage.contains("now"))) {
+      _addBotMessage(
+        "Thank you for chatting with me today! Have a great day. Closing chat now...",
+      );
+      // Wait 2 seconds then close the chat
+      Future.delayed(Duration(seconds: 2), () {
+        Navigator.pop(context);
+      });
+      return;
+    }
+
+    // Handle exit chat flow
+    if (_isExitingChat) {
+      if (lowerMessage.contains("yes") ||
+          lowerMessage.contains("yeah") ||
+          lowerMessage.contains("sure")) {
+        _addBotMessage("Great! What product are you interested in?");
+        _isExitingChat = false;
+        _isNegotiationComplete = false;
+        _selectedProduct = null;
+        _waitingForConfirmation = false;
+        _isFirstOffer = true;
+        _hasReachedFinalOffer = false;
+        return;
+      } else if (lowerMessage.contains("no") ||
+          lowerMessage.contains("nope") ||
+          lowerMessage.contains("not")) {
+        _addBotMessage(
+          "Thank you for chatting with me today! Have a great day. Closing chat now...",
+        );
+        // Wait 2 seconds then close the chat
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pop(context);
+        });
+        return;
+      } else {
+        _addBotMessage(
+          "I'm not sure if you'd like to browse other products. Please answer with yes or no.",
+        );
+        return;
+      }
+    }
+
+    // IMPROVED CATEGORY DETECTION - Check for any form of category mentions
+    // This section is completely rewritten for better detection
+    if (!_isShowingCategoryProducts) {
+      // Get all unique categories from products
+      Set<String> categories =
+          _allProducts.map((p) => p.category.toLowerCase()).toSet();
+
+      // Check if any category is mentioned in the message
+      String? matchedCategory;
+      for (String category in categories) {
+        // Look for the category name anywhere in the message, regardless of phrasing
+        if (lowerMessage.contains(category)) {
+          matchedCategory = category;
+          break;
+        }
+      }
+
+      if (matchedCategory != null) {
+        _showProductsByCategory(matchedCategory);
+        return;
+      }
+    }
+
+    // Check if user is expressing inability to pay or rejecting the deal
+    if ((_waitingForConfirmation || _hasReachedFinalOffer) &&
+        (lowerMessage.contains("can't afford") ||
+            lowerMessage.contains("cannot afford") ||
+            lowerMessage.contains("too expensive") ||
+            lowerMessage.contains("don't want") ||
+            lowerMessage.contains("do not want") ||
+            lowerMessage.contains("not interested") ||
+            (lowerMessage.contains("more than") &&
+                _extractPrice(userMessage) != null))) {
+      _isNegotiationComplete = true;
+      _waitingForConfirmation = false;
+      _isExitingChat = true;
+
+      _addBotMessage(
+        "I understand this doesn't work for you. Would you like to look at other products instead?",
+      );
+      return;
+    }
+
     // Handle yes/no responses for purchase confirmation
     if (_waitingForConfirmation) {
       String response = userMessage.toLowerCase().trim();
@@ -323,6 +424,47 @@ class _ChatBotState extends State<ChatBot> {
       return double.tryParse(match.group(1)!);
     }
     return null;
+  }
+
+  // Update the _showProductsByCategory method for better formatting
+  void _showProductsByCategory(String category) {
+    // Find products matching the category (case insensitive)
+    List<Product> categoryProducts =
+        _allProducts
+            .where((p) => p.category.toLowerCase() == category.toLowerCase())
+            .toList();
+
+    if (categoryProducts.isEmpty) {
+      _addBotMessage("I couldn't find any products in the $category category.");
+      return;
+    }
+
+    // Add a formatted header
+    String formattedCategory = category
+        .split(" ")
+        .map(
+          (word) =>
+              word.isNotEmpty
+                  ? '${word[0].toUpperCase()}${word.substring(1)}'
+                  : '',
+        )
+        .join(" ");
+
+    // Build message with products in this category
+    String productList = categoryProducts
+        .take(5) // Show only first 5 matches to avoid long messages
+        .map((p) => "\n• ${p.name} - \$${p.price.toStringAsFixed(2)}")
+        .join("");
+
+    int totalCount = categoryProducts.length;
+    String additional = totalCount > 5 ? " and ${totalCount - 5} more" : "";
+
+    _addBotMessage(
+      "Here are products in the $formattedCategory category:$productList$additional\n\n"
+      "Which one would you like to negotiate for? Just type the product name.",
+    );
+
+    _isShowingCategoryProducts = true;
   }
 
   @override
