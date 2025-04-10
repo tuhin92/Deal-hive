@@ -1,13 +1,14 @@
 import 'package:application/Views/cart_screen.dart';
 import 'package:application/Views/wishlist_screen.dart';
 import 'package:application/Widgets/banner.dart';
-import 'package:application/Widgets/chat_bot.dart';
+import 'package:application/Widgets/chat_bot.dart'
+    hide Product; // Hide the Product class from this import
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:application/Views/product_details.dart';
-import 'package:application/Models/product.dart'; // Add this import
+import 'package:application/Models/product.dart'; // Now this is the only import with Product
 import 'package:application/Services/cart_service.dart';
 import 'package:application/Services/wishlist_service.dart';
 
@@ -19,7 +20,7 @@ class AppHomeScreen extends StatefulWidget {
 }
 
 class _AppHomeScreenState extends State<AppHomeScreen> {
-  List<Product> _products = [];
+  List<Product?> _products = [];
   bool _isLoading = true;
   String _errorMessage = '';
 
@@ -117,7 +118,12 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
     );
   }
 
-  Widget _buildProductItemFromAPI(Product product) {
+  Widget _buildProductItemFromAPI(Product? product) {
+    // Null safety check for the product
+    if (product == null) {
+      return SizedBox.shrink(); // Return empty widget if product is null
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
