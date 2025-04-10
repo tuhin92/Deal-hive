@@ -279,7 +279,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
           );
         },
-        child: Icon(Icons.chat),
+        child: Icon(Icons.support_agent), // Changed from Icons.chat
         backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: Container(

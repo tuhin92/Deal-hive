@@ -222,14 +222,11 @@ class _SearchScreenState extends State<SearchScreen> {
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
             builder:
-                (context) => ChatBot(
-                  productPrice: 0.0,
-                  productName:
-                      "our products", // Changed to match home screen behavior
-                ),
+                (context) =>
+                    ChatBot(productPrice: 0.0, productName: "our products"),
           );
         },
-        child: Icon(Icons.chat),
+        child: Icon(Icons.support_agent), // Changed from Icons.chat
         backgroundColor: Colors.blue,
       ),
     );

@@ -563,13 +563,23 @@ class _ChatBotState extends State<ChatBot> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'DealBot',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.support_agent, // Added chat bot icon
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'DealBot',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 IconButton(
                   icon: Icon(Icons.close, color: Colors.white),
@@ -663,7 +673,11 @@ class ChatMessage extends StatelessWidget {
           if (isBot)
             CircleAvatar(
               backgroundColor: Colors.blue,
-              child: Icon(Icons.android, color: Colors.white, size: 18),
+              child: Icon(
+                Icons.support_agent,
+                color: Colors.white,
+                size: 18,
+              ), // Changed from Icons.android
               radius: 15,
             ),
           SizedBox(width: isBot ? 8 : 0),
