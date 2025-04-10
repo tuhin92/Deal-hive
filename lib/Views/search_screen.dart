@@ -1,10 +1,11 @@
-import 'package:application/Widgets/chat_bot.dart';
+import 'package:application/Widgets/chat_bot.dart'
+    hide Product; // Hide Product from this import
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:application/Views/product_details.dart';
-import 'package:application/Models/product.dart'; // Add this import
+import 'package:application/Models/product.dart'; // Keep this import for the Product class
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
