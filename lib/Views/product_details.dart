@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:application/Models/product.dart';
-import 'package:application/Widgets/chat_bot.dart';
+import 'package:application/Widgets/chat_bot.dart'
+    hide Product; // Hide Product from chat_bot
 import 'package:application/Services/cart_service.dart';
 import 'package:application/Services/wishlist_service.dart';
 
