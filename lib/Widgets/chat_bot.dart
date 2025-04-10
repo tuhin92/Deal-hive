@@ -39,6 +39,9 @@ class _ChatBotState extends State<ChatBot> {
   bool _isShowingCategoryProducts = false;
   bool _isExitingChat = false;
 
+  // Add this property to control typing animation duration
+  int _typingDelay = 800; // milliseconds
+
   @override
   void initState() {
     super.initState();
@@ -92,12 +95,59 @@ class _ChatBotState extends State<ChatBot> {
     }
   }
 
+  // Add this method to dynamically set typing delay based on message length
+  int _calculateTypingDelay(String message) {
+    // Base delay plus additional time per character
+    return 800 + (message.length * 20);
+  }
+
   void _addBotMessage(String message) {
     setState(() {
-      _messages.add(ChatMessage(message: message, isBot: true));
+      _isBotTyping = true;
+    });
+
+    // Calculate realistic typing delay based on message length
+    _typingDelay = _calculateTypingDelay(message);
+
+    // Simulate realistic typing time
+    Future.delayed(Duration(milliseconds: _typingDelay), () {
+      setState(() {
+        _messages.add(ChatMessage(message: message, isBot: true));
+        _isBotTyping = false;
+      });
     });
   }
 
+  // Improve product description formatting to handle markdown-like content
+  String _formatProductDescription(String description) {
+    // Handle basic markdown-style formatting
+    String formatted = description
+        .replaceAll('**', '') // Remove bold indicators
+        .replaceAll('__', ''); // Remove underline indicators
+    return formatted;
+  }
+
+  // Enhanced product display method
+  void _displayProductDetails(Product product) {
+    String formattedDescription = _formatProductDescription(
+      product.description,
+    );
+    String categoryName =
+        product.category.substring(0, 1).toUpperCase() +
+        product.category.substring(1);
+
+    _addBotMessage(
+      "Here's information about ${product.name}:\n\n"
+      "• Price: \$${product.price.toStringAsFixed(2)}\n"
+      "• Category: $categoryName\n"
+      "• Brand: ${product.brand}\n"
+      "• Availability: ${product.availability == 'in_stock' ? 'In Stock' : 'Out of Stock'}\n\n"
+      "$formattedDescription\n\n"
+      "Would you like to negotiate the price for this item?",
+    );
+  }
+
+  // Replace _handleUserMessage with enhanced version
   void _handleUserMessage(String message) {
     if (message.trim().isEmpty) return;
 
@@ -108,8 +158,8 @@ class _ChatBotState extends State<ChatBot> {
       _isBotTyping = true;
     });
 
-    // Simulate bot thinking
-    Future.delayed(Duration(seconds: 1), () {
+    // Add realistic delay before processing to simulate thinking
+    Future.delayed(Duration(milliseconds: 500), () {
       if (_selectedProduct == null) {
         _processProductSelection(message);
       } else {
@@ -222,20 +272,46 @@ class _ChatBotState extends State<ChatBot> {
       }
     }
 
-    // IMPROVED CATEGORY DETECTION - Check for any form of category mentions
-    // This section is completely rewritten for better detection
+    // ENHANCED CATEGORY DETECTION - Check for any form of category mentions
     if (!_isShowingCategoryProducts) {
       // Get all unique categories from products
       Set<String> categories =
           _allProducts.map((p) => p.category.toLowerCase()).toSet();
 
+      // Also look for singular/plural variations of categories
+      Map<String, String> categoryVariations = {};
+      for (String category in categories) {
+        // Handle plural forms
+        if (category.endsWith('s')) {
+          categoryVariations[category.substring(0, category.length - 1)] =
+              category;
+        } else {
+          categoryVariations[category + 's'] = category;
+        }
+        categoryVariations[category] = category; // Add the original form too
+      }
+
       // Check if any category is mentioned in the message
       String? matchedCategory;
-      for (String category in categories) {
-        // Look for the category name anywhere in the message, regardless of phrasing
-        if (lowerMessage.contains(category)) {
-          matchedCategory = category;
+      for (String variation in categoryVariations.keys) {
+        // Look for the category name anywhere in the message
+        if (lowerMessage.contains(variation)) {
+          matchedCategory = categoryVariations[variation];
           break;
+        }
+      }
+
+      // Also check for phrases like "show me fruits" or "I want to see fruits"
+      if (matchedCategory == null) {
+        for (String variation in categoryVariations.keys) {
+          if (lowerMessage.contains("show me $variation") ||
+              lowerMessage.contains("show $variation") ||
+              lowerMessage.contains("see $variation") ||
+              lowerMessage.contains("display $variation") ||
+              lowerMessage.contains("list $variation")) {
+            matchedCategory = categoryVariations[variation];
+            break;
+          }
         }
       }
 
@@ -618,7 +694,47 @@ class ChatMessage extends StatelessWidget {
   }
 }
 
-class BotTypingIndicator extends StatelessWidget {
+// Replace the BotTypingIndicator class with this animated version
+
+class BotTypingIndicator extends StatefulWidget {
+  @override
+  _BotTypingIndicatorState createState() => _BotTypingIndicatorState();
+}
+
+class _BotTypingIndicatorState extends State<BotTypingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  final List<Animation<double>> _animations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1200),
+    )..repeat();
+
+    // Create animations for each dot with different delays
+    for (int i = 0; i < 3; i++) {
+      final begin = 0.0;
+      final end = 1.0;
+      final curve = Interval(i * 0.2, 0.6 + i * 0.2, curve: Curves.easeInOut);
+
+      _animations.add(
+        Tween<double>(
+          begin: begin,
+          end: end,
+        ).animate(CurvedAnimation(parent: _controller, curve: curve)),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -632,7 +748,7 @@ class BotTypingIndicator extends StatelessWidget {
           ),
           SizedBox(width: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 13),
             decoration: BoxDecoration(
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(15),
@@ -640,18 +756,68 @@ class BotTypingIndicator extends StatelessWidget {
             child: Row(
               children: List.generate(
                 3,
-                (index) => Padding(
-                  padding: EdgeInsets.only(right: 2),
-                  child: CircleAvatar(
-                    backgroundColor: Colors.grey[400],
-                    radius: 3,
-                  ),
+                (index) => AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Container(
+                      margin: EdgeInsets.symmetric(horizontal: 2),
+                      child: Transform.translate(
+                        offset: Offset(0, -4 * _animations[index].value + 2),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.grey[400],
+                          radius: 3.5,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+// This assumes your Product model exists in the appropriate file
+// filepath: d:\Programming\Web Development\Deal Hive\application\lib\Models\product.dart
+
+class Product {
+  final String id;
+  final String name;
+  final String brand;
+  final String category;
+  final String availability;
+  final double price;
+  final String imageLink;
+  final String description;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.brand,
+    required this.category,
+    required this.availability,
+    required this.price,
+    required this.imageLink,
+    required this.description,
+  });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['_id'] ?? '',
+      name: json['name'] ?? '',
+      brand: json['brand'] ?? '',
+      category: json['category'] ?? '',
+      availability: json['availability'] ?? '',
+      // Handle price as either string or number
+      price:
+          json['price'] is String
+              ? double.tryParse(json['price']) ?? 0.0
+              : (json['price'] ?? 0.0).toDouble(),
+      imageLink: json['imageLink'] ?? '',
+      description: json['description'] ?? '',
     );
   }
 }
