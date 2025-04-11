@@ -684,7 +684,12 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
                 ),
           );
         },
-        child: Icon(Icons.support_agent), // Changed from Icons.chat
+        // make the icon white
+        child: Icon(
+          Icons.support_agent,
+          size: 30,
+          color: Colors.white,
+        ),
         backgroundColor: Colors.blue,
       ),
     );
