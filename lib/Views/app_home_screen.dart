@@ -11,6 +11,7 @@ import 'package:application/Views/product_details.dart';
 import 'package:application/Models/product.dart'; // Now this is the only import with Product
 import 'package:application/Services/cart_service.dart';
 import 'package:application/Services/wishlist_service.dart';
+import 'package:application/Widgets/marketplace_offers.dart';
 
 class AppHomeScreen extends StatefulWidget {
   const AppHomeScreen({super.key});
@@ -428,6 +429,192 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
     );
   }
 
+  Widget _buildMarketplaceOffer({
+    required String storeName,
+    required String productName,
+    required double originalPrice,
+    required double offerPrice,
+    required int discount,
+    required String imageUrl,
+    required Color storeColor,
+  }) {
+    return Container(
+      width: 240,
+      margin: EdgeInsets.only(right: 16, bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Store name banner
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: storeColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  storeName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    "$discount% OFF",
+                    style: TextStyle(
+                      color: storeColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Content
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  // Product image
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      imageUrl,
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value:
+                                loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 70,
+                          height: 70,
+                          color: Colors.grey[200],
+                          child: Icon(Icons.error, color: Colors.grey),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 12),
+
+                  // Product details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          productName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              "\$${offerPrice.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: storeColor,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              "\$${originalPrice.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "Limited time offer",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Button
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                "View Deal",
+                style: TextStyle(
+                  color: storeColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProductsList() {
     if (_isLoading) {
       return Container(
@@ -667,6 +854,11 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
             _buildProductsList(),
 
             SizedBox(height: 20),
+
+            // Marketplace Offers
+            MarketplaceOffers(),
+
+            SizedBox(height: 30),
           ],
         ),
       ),
@@ -685,11 +877,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
           );
         },
         // make the icon white
-        child: Icon(
-          Icons.support_agent,
-          size: 30,
-          color: Colors.white,
-        ),
+        child: Icon(Icons.support_agent, size: 30, color: Colors.white),
         backgroundColor: Colors.blue,
       ),
     );
