@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +58,6 @@ class SignInScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: const Icon(Iconsax.user),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -59,12 +65,22 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextField(
-                obscureText: true,
+                obscureText: _obscureText,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: const Icon(Iconsax.password_check),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Iconsax.eye_slash : Iconsax.eye,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
                   ),
                 ),
               ),
@@ -148,8 +164,16 @@ class SignInScreen extends StatelessWidget {
   }
 }
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +222,6 @@ class SignUpScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Full Name',
-                  prefixIcon: const Icon(Iconsax.user),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -208,7 +231,6 @@ class SignUpScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: const Icon(Iconsax.message),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -216,23 +238,43 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextField(
-                obscureText: true,
+                obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: const Icon(Iconsax.password_check),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Iconsax.eye_slash : Iconsax.eye,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
-                obscureText: true,
+                obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
-                  prefixIcon: const Icon(Iconsax.password_check),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword ? Iconsax.eye_slash : Iconsax.eye,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      });
+                    },
                   ),
                 ),
               ),
