@@ -1,35 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/auth_service.dart';
 import 'sign_in_screen.dart';
 import 'sign_up_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
-  // For demo purposes, we'll use a simple bool to simulate auth state
-  final bool isLoggedIn = false; // Change this to true to see the profile
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isLoggedIn ? 'My Profile' : 'Account'),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        actions:
-            isLoggedIn
-                ? [IconButton(icon: Icon(Iconsax.setting), onPressed: () {})]
-                : null,
-      ),
-      body:
-          isLoggedIn
-              ? _buildProfileContent(context)
-              : _buildSignInContent(context),
+    return StreamBuilder<User?>(
+      stream: _authService.authStateChanges,
+      builder: (context, snapshot) {
+        print("Auth state changed: ${snapshot.data?.email ?? 'No user'}");
+
+        // Check if user is logged in
+        final bool isLoggedIn = snapshot.hasData && snapshot.data != null;
+        final User? user = snapshot.data;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(isLoggedIn ? 'My Profile' : 'Account'),
+            elevation: 0,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            actions:
+                isLoggedIn
+                    ? [
+                      IconButton(
+                        icon: const Icon(Iconsax.setting),
+                        onPressed: () {},
+                      ),
+                    ]
+                    : null,
+          ),
+          body:
+              isLoggedIn
+                  ? _buildProfileContent(context, user!)
+                  : _buildSignInContent(context),
+        );
+      },
     );
   }
 
-  Widget _buildProfileContent(BuildContext context) {
+  Widget _buildProfileContent(BuildContext context, User user) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,49 +63,63 @@ class ProfileScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey.shade200,
-                    child: Icon(Icons.person, size: 50, color: Colors.grey),
+                    backgroundImage:
+                        user.photoURL != null
+                            ? NetworkImage(user.photoURL!)
+                            : null,
+                    child:
+                        user.photoURL == null
+                            ? const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.grey,
+                            )
+                            : null,
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
-                    'John Doe',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    user.displayName ?? 'User',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
-                    'john.doe@example.com',
-                    style: TextStyle(color: Colors.grey),
+                    user.email ?? '',
+                    style: const TextStyle(color: Colors.grey),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {},
-                    child: Text('Edit Profile'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
                     ),
+                    child: const Text('Edit Profile'),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 30),
-            ProfileMenuTile(
+            const SizedBox(height: 30),
+            const ProfileMenuTile(
               icon: Iconsax.heart,
               title: 'Saved Deals',
-              trailing: '12',
+              trailing: '0',
             ),
-            ProfileMenuTile(
+            const ProfileMenuTile(
               icon: Iconsax.clock,
               title: 'Deal History',
-              trailing: '24',
+              trailing: '0',
             ),
-            ProfileMenuTile(
+            const ProfileMenuTile(
               icon: Iconsax.notification,
               title: 'Notification Settings',
             ),
-            ProfileMenuTile(
+            const ProfileMenuTile(
               icon: Iconsax.security_safe,
               title: 'Privacy & Security',
             ),
-            ProfileMenuTile(
+            const ProfileMenuTile(
               icon: Iconsax.info_circle,
               title: 'About Deal Hive',
             ),
@@ -91,11 +127,28 @@ class ProfileScreen extends StatelessWidget {
               icon: Iconsax.logout,
               title: 'Log Out',
               textColor: Colors.red,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignInScreen()),
+              onTap: () async {
+                // Show loading dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder:
+                      (context) =>
+                          const Center(child: CircularProgressIndicator()),
                 );
+
+                try {
+                  await _authService.signOut();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error signing out: $e')),
+                  );
+                } finally {
+                  // Close dialog if it's still showing
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+                }
               },
             ),
           ],
@@ -111,19 +164,19 @@ class ProfileScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Iconsax.user, size: 100, color: Colors.grey),
-          SizedBox(height: 24),
-          Text(
+          const Icon(Iconsax.user, size: 100, color: Colors.grey),
+          const SizedBox(height: 24),
+          const Text(
             'Sign in to access your profile',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 12),
-          Text(
+          const SizedBox(height: 12),
+          const Text(
             'Track your deals, manage your account, and more',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey, fontSize: 16),
           ),
-          SizedBox(height: 40),
+          const SizedBox(height: 40),
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -132,7 +185,12 @@ class ProfileScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const SignInScreen()),
-                );
+                ).then((_) {
+                  // This will run when returning from SignInScreen
+                  setState(
+                    () {},
+                  ); // Refresh the state to reflect new auth status
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
@@ -144,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
               child: const Text('Sign In', style: TextStyle(fontSize: 16)),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -204,15 +262,15 @@ class ProfileMenuTile extends StatelessWidget {
       trailing:
           trailing != null
               ? Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(trailing!),
               )
-              : Icon(Icons.arrow_forward_ios, size: 16),
-      contentPadding: EdgeInsets.symmetric(vertical: 8),
+              : const Icon(Icons.arrow_forward_ios, size: 16),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
       onTap: onTap ?? () {},
     );
   }
