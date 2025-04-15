@@ -19,8 +19,7 @@ class _MyBannerState extends State<MyBanner> {
       subtitle: "Organic Collection",
       discount: "20",
       tagline: "FRESH PICKS",
-      imageUrl:
-          "https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&q=80",
+      imageUrl: "assets/banners/fruits.png",
       color: Color(0xFF4CAF50),
     ),
     BannerData(
@@ -28,8 +27,7 @@ class _MyBannerState extends State<MyBanner> {
       subtitle: "Trendy Collection",
       discount: "30",
       tagline: "NEW ARRIVALS",
-      imageUrl:
-          "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&q=80",
+      imageUrl: "assets/banners/fashion.png",
       color: Color(0xFFFF6E40),
     ),
     BannerData(
@@ -37,8 +35,7 @@ class _MyBannerState extends State<MyBanner> {
       subtitle: "Luxury Collection",
       discount: "35",
       tagline: "SELF CARE",
-      imageUrl:
-          "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&q=80",
+      imageUrl: "assets/banners/beauty.png",
       color: Color(0xFFE91E63),
     ),
     BannerData(
@@ -46,8 +43,7 @@ class _MyBannerState extends State<MyBanner> {
       subtitle: "Ocean Collection",
       discount: "22",
       tagline: "CATCH OF THE DAY",
-      imageUrl:
-          "https://images.unsplash.com/photo-1579756423478-02bc82a97089?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&q=80",
+      imageUrl: "assets/banners/seafood.png",
       color: Color(0xFF03A9F4),
     ),
     BannerData(
@@ -55,8 +51,7 @@ class _MyBannerState extends State<MyBanner> {
       subtitle: "Athletic Collection",
       discount: "25",
       tagline: "GET FIT",
-      imageUrl:
-          "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&q=80",
+      imageUrl: "assets/banners/sports.png",
       color: Color(0xFF2196F3),
     ),
     BannerData(
@@ -64,8 +59,7 @@ class _MyBannerState extends State<MyBanner> {
       subtitle: "Wellness Collection",
       discount: "15",
       tagline: "STAY HEALTHY",
-      imageUrl:
-          "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&q=80",
+      imageUrl: "assets/banners/medicine.png",
       color: Color(0xFF9C27B0),
     ),
   ];
@@ -146,7 +140,7 @@ class _MyBannerState extends State<MyBanner> {
                 blendMode: BlendMode.dstIn,
                 child: AnimatedSwitcher(
                   duration: Duration(milliseconds: 500),
-                  child: Image.network(
+                  child: Image.asset(
                     currentBanner.imageUrl,
                     key: ValueKey<String>(currentBanner.imageUrl),
                     height: double.infinity,

@@ -60,6 +60,7 @@ flutter:
     - assets/
     - assets/empty_cart.json
     - assets/empty_wishlist.json
+    - assets/banners/
     
 
   # An image asset can refer to one or more resolution-specific "variants", see
