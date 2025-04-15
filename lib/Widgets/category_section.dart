@@ -24,43 +24,20 @@ class CategorySection extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               children: [
                 CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/3194/3194766.png",
+                  icon: Icons.shopping_basket,
                   categoryName: "Fruits",
                 ),
+                CategoryItem(icon: Icons.set_meal, categoryName: "Fish"),
+                CategoryItem(icon: Icons.medication, categoryName: "Medicine"),
                 CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/3075/3075975.png",
-                  categoryName: "Fish",
-                ),
-                CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/3004/3004458.png",
-                  categoryName: "Medicine",
-                ),
-                CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/1005/1005665.png",
+                  icon: Icons.face_retouching_natural,
                   categoryName: "Beauty",
                 ),
+                CategoryItem(icon: Icons.devices, categoryName: "Electronics"),
+                CategoryItem(icon: Icons.checkroom, categoryName: "Clothing"),
+                CategoryItem(icon: Icons.chair, categoryName: "Home & Kitchen"),
                 CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/3659/3659899.png",
-                  categoryName: "Electronics",
-                ),
-                CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/2331/2331966.png",
-                  categoryName: "Clothing",
-                ),
-                CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/1830/1830847.png",
-                  categoryName: "Home & Kitchen",
-                ),
-                CategoryItem(
-                  imageUrl:
-                      "https://cdn-icons-png.flaticon.com/512/857/857418.png",
+                  icon: Icons.sports_basketball,
                   categoryName: "Sports & Outdoors",
                 ),
               ],
