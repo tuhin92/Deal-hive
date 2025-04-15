@@ -5,6 +5,7 @@ import 'package:application/Widgets/category_section.dart';
 import 'package:application/Widgets/products_section.dart';
 import 'package:application/Widgets/marketplace_offers.dart';
 import 'package:application/Widgets/chat_bot.dart' hide Product;
+import 'package:application/Widgets/payment_options_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
@@ -184,6 +185,13 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
 
             // Categories section
             CategorySection(),
+
+            SizedBox(height: 15),
+
+            // Payment Options Banner
+            PaymentOptionsBanner(),
+
+            SizedBox(height: 15),
 
             // Products section
             ProductsSection(
